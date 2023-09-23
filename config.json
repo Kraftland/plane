@@ -1,5 +1,5 @@
 {
-  "defaultHomeserver": 1,
+  "defaultHomeserver": 0,
   "homeserverList": [
     "moechat.kimiblock.top",
     "envs.net"
