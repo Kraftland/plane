@@ -50,7 +50,7 @@ let searchingHs = null;
 function Homeserver({ onChange }) {
   const [hs, setHs] = useState(null);
   const [debounce] = useState(new Debounce());
-  const [process, setProcess] = useState({ isLoading: true, message: 'Loading homeserver list...' });
+  const [process, setProcess] = useState({ isLoading: true, message: 'Loading...' });
   const hsRef = useRef();
 
   const setupHsConfig = async (servername) => {
@@ -118,14 +118,14 @@ function Homeserver({ onChange }) {
           onChange={handleHsInput}
           value={hs?.selected}
           forwardRef={hsRef}
-          label="Homeserver"
+          label="Using"
           disabled={hs === null || !hs.allowCustom}
         />
         <ContextMenu
           placement="right"
           content={(hideMenu) => (
             <>
-              <MenuHeader>Homeserver list</MenuHeader>
+              <MenuHeader>Or</MenuHeader>
               {
                 hs?.list.map((hsName) => (
                   <MenuItem
@@ -162,7 +162,7 @@ Homeserver.propTypes = {
 function Login({ loginFlow, baseUrl }) {
   const [typeIndex, setTypeIndex] = useState(0);
   const [passVisible, setPassVisible] = useState(false);
-  const loginTypes = ['Username', 'Email'];
+  const loginTypes = ['Username'];
   const isPassword = loginFlow?.filter((flow) => flow.type === 'm.login.password')[0];
   const ssoProviders = loginFlow?.filter((flow) => flow.type === 'm.login.sso')[0];
 
@@ -564,7 +564,7 @@ function Auth() {
               <Header>
                 <Avatar size="extra-small" imageSrc={CinnySvg} />
                 <TitleWrapper>
-                  <Text variant="h2" weight="medium">Cinny</Text>
+                  <Text variant="h2" weight="medium">MoeChat!</Text>
                 </TitleWrapper>
               </Header>
               <div className="auth-card__content">
@@ -576,16 +576,13 @@ function Auth() {
 
         <div className="auth-footer">
           <Text variant="b2">
-            <a href="https://cinny.in" target="_blank" rel="noreferrer">About</a>
+            <a href="https://kraftland.kimiblock.top/" target="_blank" rel="noreferrer">Kraftland</a>
           </Text>
           <Text variant="b2">
             <a href="https://github.com/ajbura/cinny/releases" target="_blank" rel="noreferrer">{`v${cons.version}`}</a>
           </Text>
           <Text variant="b2">
-            <a href="https://twitter.com/cinnyapp" target="_blank" rel="noreferrer">Twitter</a>
-          </Text>
-          <Text variant="b2">
-            <a href="https://matrix.org" target="_blank" rel="noreferrer">Powered by Matrix</a>
+            <a href="https://cinny.in" target="_blank" rel="noreferrer">Powered by Cinny</a>
           </Text>
         </div>
       </div>
