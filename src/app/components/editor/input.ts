@@ -4,7 +4,7 @@ import parse from 'html-dom-parser';
 import { ChildNode, Element, isText, isTag } from 'domhandler';
 
 import { sanitizeCustomHtml } from '../../utils/sanitize';
-import { BlockType, MarkType } from './Elements';
+import { BlockType, MarkType } from './types';
 import {
   BlockQuoteElement,
   CodeBlockElement,
@@ -21,7 +21,7 @@ import {
   UnorderedListElement,
 } from './slate';
 import { parseMatrixToUrl } from '../../utils/matrix';
-import { createEmoticonElement, createMentionElement } from './common';
+import { createEmoticonElement, createMentionElement } from './utils';
 
 const markNodeToType: Record<string, MarkType> = {
   b: MarkType.Bold,
@@ -74,7 +74,7 @@ const elementToInlineNode = (node: Element): MentionElement | EmoticonElement | 
     if (typeof href !== 'string') return undefined;
     const [mxId] = parseMatrixToUrl(href);
     if (mxId) {
-      return createMentionElement(mxId, mxId, false);
+      return createMentionElement(mxId, parseNodeText(node) || mxId, false);
     }
   }
   return undefined;

@@ -3,7 +3,7 @@ import { Box, Chip, Icon, IconButton, Icons, Line, PopOut, Spinner, Text, as, co
 import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { IContent, MatrixEvent, RelationType, Room } from 'matrix-js-sdk';
-import isHotkey from 'is-hotkey';
+import { isKeyHotkey } from 'is-hotkey';
 import {
   AUTOCOMPLETE_PREFIXES,
   AutocompletePrefix,
@@ -32,6 +32,7 @@ import { EmojiBoard } from '../../../components/emoji-board';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { getEditedEvent, trimReplyFromFormattedBody } from '../../../utils/room';
+import { mobileOrTablet } from '../../../utils/user-agent';
 
 type MessageEditorProps = {
   roomId: string;
@@ -44,6 +45,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
   ({ room, roomId, mEvent, imagePackRooms, onCancel, ...props }, ref) => {
     const mx = useMatrixClient();
     const editor = useEditor();
+    const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
     const [globalToolbar] = useSetting(settingsAtom, 'editorToolbar');
     const [isMarkdown] = useSetting(settingsAtom, 'isMarkdown');
     const [toolbar, setToolbar] = useState(globalToolbar);
@@ -118,21 +120,21 @@ export const MessageEditor = as<'div', MessageEditorProps>(
 
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
-        if (isHotkey('enter', evt)) {
+        if (enterForNewline ? isKeyHotkey('shift+enter', evt) : isKeyHotkey('enter', evt)) {
           evt.preventDefault();
           handleSave();
         }
-        if (isHotkey('escape', evt)) {
+        if (isKeyHotkey('escape', evt)) {
           evt.preventDefault();
           onCancel();
         }
       },
-      [onCancel, handleSave]
+      [onCancel, handleSave, enterForNewline]
     );
 
     const handleKeyUp: KeyboardEventHandler = useCallback(
       (evt) => {
-        if (isHotkey('escape', evt)) {
+        if (isKeyHotkey('escape', evt)) {
           evt.preventDefault();
           return;
         }
@@ -146,7 +148,10 @@ export const MessageEditor = as<'div', MessageEditorProps>(
       [editor]
     );
 
-    const handleCloseAutocomplete = useCallback(() => setAutocompleteQuery(undefined), []);
+    const handleCloseAutocomplete = useCallback(() => {
+      ReactEditor.focus(editor);
+      setAutocompleteQuery(undefined);
+    }, [editor]);
 
     const handleEmoticonSelect = (key: string, shortcode: string) => {
       editor.insertNode(createEmoticonElement(key, shortcode));
@@ -167,7 +172,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
       });
 
       editor.insertFragment(initialValue);
-      ReactEditor.focus(editor);
+      if (!mobileOrTablet()) ReactEditor.focus(editor);
     }, [editor, getPrevBodyAndFormattedBody]);
 
     useEffect(() => {
@@ -188,7 +193,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
         )}
         {autocompleteQuery?.prefix === AutocompletePrefix.UserMention && (
           <UserMentionAutocomplete
-            roomId={roomId}
+            room={room}
             editor={editor}
             query={autocompleteQuery}
             requestClose={handleCloseAutocomplete}
@@ -258,7 +263,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
                             onCustomEmojiSelect={handleEmoticonSelect}
                             requestClose={() => {
                               setEmojiBoard(false);
-                              ReactEditor.focus(editor);
+                              if (!mobileOrTablet()) ReactEditor.focus(editor);
                             }}
                           />
                         }
