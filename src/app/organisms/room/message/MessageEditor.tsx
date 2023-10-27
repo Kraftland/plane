@@ -77,7 +77,8 @@ export const MessageEditor = as<'div', MessageEditorProps>(
         const customHtml = trimCustomHtml(
           toMatrixCustomHTML(editor.children, {
             allowTextFormatting: true,
-            allowMarkdown: isMarkdown,
+            allowBlockMarkdown: isMarkdown,
+            allowInlineMarkdown: isMarkdown,
           })
         );
 
@@ -129,7 +130,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
 
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
-        if (enterForNewline ? isKeyHotkey('shift+enter', evt) : isKeyHotkey('enter', evt)) {
+        if (isKeyHotkey('mod+enter', evt) || (!enterForNewline && isKeyHotkey('enter', evt))) {
           evt.preventDefault();
           handleSave();
         }
