@@ -3,7 +3,8 @@ import { Descendant, Text } from 'slate';
 import { sanitizeText } from '../../utils/sanitize';
 import { BlockType } from './types';
 import { CustomElement } from './slate';
-import { parseBlockMD, parseInlineMD, replaceMatch } from '../../utils/markdown';
+import { parseBlockMD, parseInlineMD } from '../../plugins/markdown';
+import { findAndReplace } from '../../utils/findAndReplace';
 
 export type OutputOptions = {
   allowTextFormatting?: boolean;
@@ -51,28 +52,32 @@ const elementToCustomHtml = (node: CustomElement, children: string): string => {
       return `<ul>${children}</ul>`;
 
     case BlockType.Mention:
-      return `<a href="https://matrix.to/#/${node.id}">${node.name}</a>`;
+      return `<a href="https://matrix.to/#/${encodeURIComponent(node.id)}">${sanitizeText(
+        node.name
+      )}</a>`;
     case BlockType.Emoticon:
       return node.key.startsWith('mxc://')
-        ? `<img data-mx-emoticon src="${node.key}" alt="${node.shortcode}" title="${node.shortcode}" height="32">`
-        : node.key;
+        ? `<img data-mx-emoticon src="${node.key}" alt="${sanitizeText(
+            node.shortcode
+          )}" title="${sanitizeText(node.shortcode)}" height="32" />`
+        : sanitizeText(node.key);
     case BlockType.Link:
-      return `<a href="${node.href}">${node.children}</a>`;
+      return `<a href="${encodeURIComponent(node.href)}">${node.children}</a>`;
     case BlockType.Command:
-      return `/${node.command}`;
+      return `/${sanitizeText(node.command)}`;
     default:
       return children;
   }
 };
 
-const HTML_TAG_REG = /<([a-z]+)(?![^>]*\/>)[^<]*<\/\1>/;
-const ignoreHTMLParseInlineMD = (text: string): string => {
-  if (text === '') return text;
-  const match = text.match(HTML_TAG_REG);
-  if (!match) return parseInlineMD(text);
-  const [matchedTxt] = match;
-  return replaceMatch((txt) => [ignoreHTMLParseInlineMD(txt)], text, match, matchedTxt).join('');
-};
+const HTML_TAG_REG_G = /<([\w-]+)(?: [^>]*)?(?:(?:\/>)|(?:>.*?<\/\1>))/g;
+const ignoreHTMLParseInlineMD = (text: string): string =>
+  findAndReplace(
+    text,
+    HTML_TAG_REG_G,
+    (match) => match[0],
+    (txt) => parseInlineMD(txt)
+  ).join('');
 
 export const toMatrixCustomHTML = (
   node: Descendant | Descendant[],
