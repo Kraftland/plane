@@ -5,4 +5,9 @@
     "envs.net"
   ],
   "allowCustomHomeservers": false
+
+  "hashRouter": {
+    "enabled": false,
+    "basename": "/"
+  }
 }
