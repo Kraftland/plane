@@ -4,7 +4,7 @@
     "moechat.kimiblock.top",
     "envs.net"
   ],
-  "allowCustomHomeservers": false
+  "allowCustomHomeservers": false,
 
   "hashRouter": {
     "enabled": false,
